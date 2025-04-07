@@ -12,11 +12,16 @@ const config = {
 };
 
 const client = new Client(config);
-app.post('/webhook', middleware(config), async (req, res) => {
-  const events = req.body.events;
-  const results = await Promise.all(events.map(handleEvent));
-  res.json(results);
+app.post('/webhook', middleware(config), (req, res) => {
+  Promise
+    .all(req.body.events.map(handleEvent))
+    .then(() => res.status(200).send('OK'))  // ←ここを修正
+    .catch((err) => {
+      console.error(err);
+      res.status(500).end();  // ←エラー処理も追加
+    });
 });
+
 
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
